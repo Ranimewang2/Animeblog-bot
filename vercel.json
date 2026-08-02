@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "functions": {
+    "api/generate.js": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/generate",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}

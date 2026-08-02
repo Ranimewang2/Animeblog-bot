@@ -1,0 +1,17 @@
+{
+  "name": "isekai-blog-bot",
+  "version": "1.0.0",
+  "description": "Automated anime blog generator for isekaiblogging.blogspot.com",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@vercel/kv": "^1.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
