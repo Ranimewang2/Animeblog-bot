@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Isekai Blog Bot — Control Panel</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0d;
+    --card: #161616;
+    --border: #2a2a2a;
+    --accent: #e63946;
+    --accent2: #4361ee;
+    --green: #2dc653;
+    --yellow: #f4a261;
+    --text: #e8e8e8;
+    --muted: #888;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { font-size: 28px; }
+  .logo-text h1 { font-size: 18px; font-weight: 700; color: #fff; }
+  .logo-text p { font-size: 12px; color: var(--muted); }
+
+  .status-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: #1a2a1a; border: 1px solid var(--green);
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 13px; color: var(--green); font-weight: 600;
+  }
+  .status-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  @media(max-width:600px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .card h2 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+
+  .stat { font-size: 36px; font-weight: 800; color: #fff; }
+  .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer;
+    font-size: 15px; font-weight: 600; transition: all 0.2s; width: 100%;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #c1121f; }
+  .btn-secondary { background: var(--accent2); color: #fff; }
+  .btn-secondary:hover { background: #3451d1; }
+  .btn-ghost { background: var(--border); color: var(--text); }
+  .btn-ghost:hover { background: #333; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .input-group { margin-bottom: 14px; }
+  .input-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .input-group input {
+    width: 100%; background: #1e1e1e; border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; color: var(--text);
+    font-size: 14px; outline: none; transition: border-color 0.2s;
+  }
+  .input-group input:focus { border-color: var(--accent); }
+
+  .log-box {
+    background: #0a0a0a; border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; height: 200px;
+    overflow-y: auto; font-family: 'Courier New', monospace;
+    font-size: 12px; line-height: 1.6;
+  }
+  .log-line { margin-bottom: 4px; }
+  .log-line.success { color: var(--green); }
+  .log-line.error { color: var(--accent); }
+  .log-line.info { color: #74c0fc; }
+  .log-line.warn { color: var(--yellow); }
+
+  .post-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .post-item {
+    background: #1a1a1a; border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .post-item-title { font-size: 13px; font-weight: 600; color: #fff; flex: 1; }
+  .post-item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .tag {
+    font-size: 11px; font-weight: 600; padding: 3px 8px;
+    border-radius: 20px; white-space: nowrap;
+  }
+  .tag-review { background: #1a2a3a; color: #74c0fc; }
+  .tag-list { background: #1a2a1a; color: var(--green); }
+  .tag-news { background: #2a1a1a; color: var(--accent); }
+
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.7s linear infinite; display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .env-check { display: flex; flex-direction: column; gap: 8px; }
+  .env-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+  .env-item span:first-child { color: var(--muted); }
+  .env-ok { color: var(--green); font-weight: 700; }
+  .env-missing { color: var(--accent); font-weight: 700; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .alert {
+    padding: 12px 16px; border-radius: 8px; font-size: 13px;
+    margin-bottom: 16px; display: none;
+  }
+  .alert.success { background: #1a2a1a; border: 1px solid var(--green); color: var(--green); display: block; }
+  .alert.error { background: #2a1a1a; border: 1px solid var(--accent); color: var(--accent); display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎌</div>
+    <div class="logo-text">
+      <h1>Isekai Blog Bot</h1>
+      <p>isekaiblogging.blogspot.com</p>
+    </div>
+  </div>
+  <div class="status-badge">
+    <div class="status-dot"></div>
+    Online
+  </div>
+</header>
+
+<main>
+
+  <!-- Alert box -->
+  <div id="alert" class="alert"></div>
+
+  <!-- Stats row -->
+  <div class="grid-2">
+    <div class="card">
+      <h2>📊 Posts Today</h2>
+      <div class="stat" id="postsToday">—</div>
+      <div class="stat-label">published in last 24hrs</div>
+    </div>
+    <div class="card">
+      <h2>⚙️ System Status</h2>
+      <div class="env-check" id="envCheck">
+        <div class="env-item"><span>OpenRouter</span><span>checking...</span></div>
+        <div class="env-item"><span>Google OAuth</span><span>checking...</span></div>
+        <div class="env-item"><span>Blogger API</span><span>checking...</span></div>
+        <div class="env-item"><span>Vercel KV</span><span>checking...</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual trigger -->
+  <div class="card" style="margin-bottom:16px;">
+    <h2>🚀 Manual Trigger</h2>
+    <div class="input-group">
+      <label>Secret Key (CRON_SECRET from your .env)</label>
+      <input type="password" id="secretKey" placeholder="Enter your CRON_SECRET..." />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;">
+      <button class="btn btn-primary" id="generateBtn" onclick="triggerGenerate()">
+        ⚡ Generate Post Now
+      </button>
+      <button class="btn btn-ghost" onclick="checkHealth()">
+        🩺 Health Check
+      </button>
+    </div>
+  </div>
+
+  <!-- Live log -->
+  <div class="card" style="margin-bottom:16px;">
+    <h2>📋 Live Log</h2>
+    <div class="log-box" id="logBox">
+      <div class="log-line info">» Bot ready. Enter your secret key and click Generate to run manually.</div>
+      <div class="log-line info">» Or set up cron-job.org to hit /api/generate automatically daily.</div>
+    </div>
+  </div>
+
+  <!-- Recent posts -->
+  <div class="card">
+    <h2>📝 Recent Posts (from Blogger)</h2>
+    <div class="post-list" id="postList">
+      <div style="color:var(--muted);font-size:13px;">Enter your secret key and click Health Check to load recent posts.</div>
+    </div>
+  </div>
+
+  <!-- Cron setup guide -->
+  <hr class="divider" />
+  <div class="card">
+    <h2>⏰ Cron-Job.org Setup Guide</h2>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8;">
+      <p style="margin-bottom:10px;">Set up automatic daily posting:</p>
+      <p>1. Go to <a href="https://cron-job.org" target="_blank" style="color:#74c0fc;">cron-job.org</a> → Create account</p>
+      <p>2. New cronjob → Title: <strong style="color:#fff;">Isekai Blog Bot</strong></p>
+      <p>3. URL: <code id="cronUrl" style="background:#1e1e1e;padding:2px 8px;border-radius:4px;color:#e8e8e8;">https://YOUR-APP.vercel.app/api/generate</code></p>
+      <p>4. Schedule: <strong style="color:#fff;">Daily at 08:00 UTC</strong></p>
+      <p>5. Headers → Add: <code style="background:#1e1e1e;padding:2px 8px;border-radius:4px;color:#e8e8e8;">Authorization: Bearer YOUR_CRON_SECRET</code></p>
+      <p>6. Save → Enable ✅</p>
+      <p style="margin-top:10px;color:var(--yellow);">💡 Add 3 jobs (8am, 2pm, 8pm UTC) = 3 posts/day automatically!</p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ── HELPERS ──────────────────────────────────────────────────────────────────
+
+  function log(msg, type = 'info') {
+    const box = document.getElementById('logBox');
+    const line = document.createElement('div');
+    line.className = `log-line ${type}`;
+    const time = new Date().toLocaleTimeString();
+    line.textContent = `[${time}] ${msg}`;
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function showAlert(msg, type = 'success') {
+    const el = document.getElementById('alert');
+    el.textContent = msg;
+    el.className = `alert ${type}`;
+    setTimeout(() => { el.className = 'alert'; }, 6000);
+  }
+
+  function getKey() {
+    return document.getElementById('secretKey').value.trim();
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = loading;
+    btn.innerHTML = loading
+      ? '<span class="spinner"></span> Generating...'
+      : '⚡ Generate Post Now';
+  }
+
+  // ── HEALTH CHECK ─────────────────────────────────────────────────────────────
+
+  async function checkHealth() {
+    const key = getKey();
+    if (!key) { showAlert('Enter your CRON_SECRET key first!', 'error'); return; }
+
+    log('Running health check...');
+
+    try {
+      const res = await fetch(`/api/generate?health=true&key=${encodeURIComponent(key)}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        log('Health check failed: ' + (data.error || res.status), 'error');
+        showAlert('Health check failed — wrong key?', 'error');
+        return;
+      }
+
+      // Update env check panel
+      const envEl = document.getElementById('envCheck');
+      const envItems = [
+        ['OpenRouter', data.env?.openrouter],
+        ['Google OAuth', data.env?.googleClientId && data.env?.googleSecret && data.env?.refreshToken],
+        ['Blogger ID', data.env?.bloggerId],
+        ['Vercel KV', data.env?.kvUrl],
+      ];
+
+      envEl.innerHTML = envItems.map(([name, ok]) => `
+        <div class="env-item">
+          <span>${name}</span>
+          <span class="${ok ? 'env-ok' : 'env-missing'}">${ok ? '✅ Ready' : '❌ Missing'}</span>
+        </div>
+      `).join('');
+
+      const allOk = envItems.every(([, ok]) => ok);
+      log(`Health check: ${allOk ? 'All systems ready ✅' : 'Some env vars missing ⚠️'}`, allOk ? 'success' : 'warn');
+
+      // Load recent posts
+      await loadRecentPosts(key);
+
+    } catch (e) {
+      log('Health check error: ' + e.message, 'error');
+    }
+  }
+
+  // ── GENERATE POST ─────────────────────────────────────────────────────────────
+
+  async function triggerGenerate() {
+    const key = getKey();
+    if (!key) { showAlert('Enter your CRON_SECRET key first!', 'error'); return; }
+
+    setLoading(true);
+    log('🚀 Triggering blog post generation...');
+    log('Fetching trending topics from AniList + Jikan + AniNews...');
+
+    try {
+      const res = await fetch(`/api/generate?key=${encodeURIComponent(key)}`);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        log('❌ Generation failed: ' + (data.error || data.message), 'error');
+        showAlert('Generation failed: ' + (data.error || data.message), 'error');
+        return;
+      }
+
+      log(`✅ Post published successfully in ${data.duration}!`, 'success');
+      log(`📝 Title: ${data.post?.title}`, 'success');
+      log(`🔗 URL: ${data.post?.url}`, 'success');
+      log(`🤖 Model used: ${data.post?.model}`, 'info');
+
+      showAlert(`✅ Published: "${data.post?.title}"`, 'success');
+
+      // Update stats
+      const statEl = document.getElementById('postsToday');
+      statEl.textContent = parseInt(statEl.textContent || '0') + 1;
+
+      // Refresh post list
+      await loadRecentPosts(key);
+
+    } catch (e) {
+      log('❌ Network error: ' + e.message, 'error');
+      showAlert('Network error — check console', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── LOAD RECENT POSTS ─────────────────────────────────────────────────────────
+
+  async function loadRecentPosts(key) {
+    try {
+      const res = await fetch(`/api/posts?key=${encodeURIComponent(key)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      const list = document.getElementById('postList');
+      if (!data.posts || data.posts.length === 0) {
+        list.innerHTML = '<div style="color:var(--muted);font-size:13px;">No posts yet — generate your first one!</div>';
+        document.getElementById('postsToday').textContent = '0';
+        return;
+      }
+
+      document.getElementById('postsToday').textContent = data.posts.length;
+
+      list.innerHTML = data.posts.map((post) => {
+        const type = post.labels?.includes('Anime News') ? 'news'
+          : post.labels?.includes('Top 10 Anime') ? 'list' : 'review';
+        const tagLabel = type === 'news' ? 'NEWS' : type === 'list' ? 'TOP LIST' : 'REVIEW';
+        const date = post.published ? new Date(post.published).toLocaleDateString() : 'Today';
+
+        return `
+          <div class="post-item">
+            <div style="flex:1;">
+              <div class="post-item-title">${post.title}</div>
+              <div class="post-item-meta">${date}</div>
+            </div>
+            <span class="tag tag-${type}">${tagLabel}</span>
+            ${post.url ? `<a href="${post.url}" target="_blank" style="color:#74c0fc;font-size:12px;white-space:nowrap;">View →</a>` : ''}
+          </div>`;
+      }).join('');
+
+    } catch (e) {
+      console.error('Failed to load posts:', e);
+    }
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────────
+
+  // Set cron URL dynamically
+  document.getElementById('cronUrl').textContent = `${window.location.origin}/api/generate`;
+
+  // Auto-check health if key is in URL params (for easy bookmarking)
+  const urlKey = new URLSearchParams(window.location.search).get('key');
+  if (urlKey) {
+    document.getElementById('secretKey').value = urlKey;
+    checkHealth();
+  }
+</script>
+</body>
+</html>
